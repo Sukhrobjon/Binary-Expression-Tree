@@ -14,6 +14,9 @@ class BinaryTreeNode(object):
         self.data = data
         self.right = None
         self.left = None
+        # flag for operators to distinguish from operands
+        self.operator = False
+        self.value = None
 
     def __repr__(self):
         """Return a string representation of this parse tree node."""
@@ -54,28 +57,33 @@ class BinaryExpressionTree(object):
         # if max size is 0, then it is infinite
         stack = queue.LifoQueue(maxsize=1000)
         char = expression[0]
+        # create a node for the first element of the expression
         node = BinaryTreeNode(char)
+        # push it to stack
         stack.put(node)
+
+        # iterator for expression
         i = 1
         while not stack.empty():
             char = expression[i]
             # if char is operand
-            if char in lower_string:
+            if char in lower_string or char in "0123456789":
                 # create a node and push the node into the stack
                 node = BinaryTreeNode(char)
                 stack.put(node)
             else:
                 # create a parent(operator) node for operands
-                operator = BinaryTreeNode(char)
+                operator_node = BinaryTreeNode(char)
+                operator_node.operator = True
                 # pop the last pushed item and create right_child
                 right_child = stack.get()
                 # pop item one before the last item and create left_child
                 left_child = stack.get()
                 # assign those as a child of the operand
-                operator.right = right_child
-                operator.left = left_child
+                operator_node.right = right_child
+                operator_node.left = left_child
                 # push back the operand node to the stack
-                stack.put(operator)
+                stack.put(operator_node)
                 
 
                 # check if we reach last element in the expression
@@ -119,12 +127,55 @@ class BinaryExpressionTree(object):
             # Traverse right subtree, if it exists
             self._traverse_in_order_recursive(node.right, visit)
 
+    def calculate(self, node=None):
+        """
+        Calculate the expression in the tree
+        """
+        # initialize
+        
+        if node is None:
+            node = self.root
+        
+        # empty tree
+        if node is None:
+            return 0
+        
+
+        if node.is_leaf():
+            node.value = int(node.data)
+            return int(node.data)
+        
+        left_sum = self.calculate(node.left)
+        right_sum = self.calculate(node.right)
+
+        # print(f"node.value: {node.value}, node.data: {node.data}")
+        # addition
+        if node.data == "+":
+            node.value = left_sum + right_sum
+            return left_sum + right_sum
+        # subtraction
+        elif node.data == "-":
+            return left_sum - right_sum
+        # division
+        elif node.data == "/":
+            return left_sum / right_sum
+        # multiplication
+        elif node.data == "*":
+            return left_sum * right_sum
+        # power
+        else:
+            return left_sum ** right_sum
+        
+        
 
 if __name__ == "__main__":
 
-    user_input = "ab*c/ef/g*+k+xy*-"
-    tree_obj = BinaryExpressionTree(expression=user_input)
+    # user_input = "ab*c/ef/g*+k+xy*-"
+    user_input = "52/3+79+-"
+    expr = "24^"
+    tree_obj = BinaryExpressionTree(user_input)
 
     print(tree_obj)
     print(tree_obj.items_in_order())
+    print(tree_obj.calculate())
     
