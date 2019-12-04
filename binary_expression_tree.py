@@ -182,7 +182,7 @@ def infix_to_postfix(infix_input):
         # check if char is operator
         if char in operators:
             # check if the stack is empty
-            if len(stack) == 0:
+            if len(stack) == 0 or stack[0] == '(':
                 # just push the operator into stack
                 stack.appendleft(char)
                 i += 1
@@ -211,13 +211,26 @@ def infix_to_postfix(infix_input):
                     # pop the top element
                     popped_element = stack.popleft()
                     postfix.append(popped_element)
-                    
+        elif char == '(':
+            # add it to the stack
+            stack.appendleft(char)
+            i += 1
+        elif char == ')':
+            top_element = stack[0]
+            while top_element != '(':
+                popped_element = stack.popleft()
+                postfix.append(popped_element)
+                # update the top element
+                top_element = stack[0]
+            # now we pop opening parenthases but we dont add it to postfix expression
+            stack.popleft()
+            i += 1
         # char is operand
         else:
             postfix.append(char)
             i += 1
             print(postfix)
-        
+        print(f"stack: {stack}")
     if len(stack) > 0:
         for i in range(len(stack)):
             postfix.append(stack.popleft())
@@ -240,6 +253,7 @@ if __name__ == "__main__":
     # print(tree_obj.calculate())
     # for i in range(tree_obj.size):
     #===============Test postfix conversion====================#
-    infix = "a*b/c+e/f*g+k-x*y"
+    infix = "A*(B+C)/D"
+    # expected = "kl+mn*-op^w*u/v/t*+q+"
     postfix = infix_to_postfix(infix)
     print(f"postfix: {postfix}")
