@@ -1,5 +1,6 @@
 #!python
 import queue
+from collections import deque
 lower_string = "abcdefghijklmnopqrstuvwxyz"
 
 
@@ -55,7 +56,7 @@ class BinaryExpressionTree(object):
         """
 
         # if max size is 0, then it is infinite
-        stack = queue.LifoQueue(maxsize=1000)
+        stack = queue.LifoQueue(maxsize=0)
         char = expression[0]
         # create a node for the first element of the expression
         node = BinaryTreeNode(char)
@@ -139,8 +140,8 @@ class BinaryExpressionTree(object):
         # empty tree
         if node is None:
             return 0
-        
 
+        # check if we are at the leaf, it means it is a operand
         if node.is_leaf():
             node.value = int(node.data)
             return int(node.data)
@@ -148,7 +149,6 @@ class BinaryExpressionTree(object):
         left_sum = self.calculate(node.left)
         right_sum = self.calculate(node.right)
 
-        # print(f"node.value: {node.value}, node.data: {node.data}")
         # addition
         if node.data == "+":
             node.value = left_sum + right_sum
@@ -166,16 +166,80 @@ class BinaryExpressionTree(object):
         else:
             return left_sum ** right_sum
         
+
+def infix_to_postfix(infix_input):
+    precedence_order = {'+': 0, '-': 0, '*': 1, '/': 1, '^': 2, '(': 3, ')': 3}
+    associativity = {'+': "LR", '-': "LR", '*': "LR", '/': "LR", '^': "RL"}
+    
+    i = 0
+    postfix = []
+    operators = "+-/*^"
+    stack = deque()
+    while i < len(infix_input):
         
+        char = infix_input[i]
+        print(f"char: {char}")
+        # check if char is operator
+        if char in operators:
+            # check if the stack is empty
+            if len(stack) == 0:
+                # just push the operator into stack
+                stack.appendleft(char)
+                i += 1
+            # otherwise compare the curr char with top of the element
+            else:
+                # peek the top element
+                top_element = stack[0]
+                # check for precedence
+                # if they have equal precedence
+                if precedence_order[char] == precedence_order[top_element]:
+                    # check for associativity
+                    if associativity[char] == "LR":
+                        # pop the top of the stack and add to the postfix
+                        popped_element = stack.popleft()
+                        postfix.append(popped_element)
+                    # if associativity of char is Right to left
+                    elif associativity[char] == "RL":
+                        # push the new operator to the stack
+                        stack.appendleft(char)
+                        i += 1
+                elif precedence_order[char] > precedence_order[top_element]:
+                    # push the char into stack
+                    stack.appendleft(char)
+                    i += 1
+                elif precedence_order[char] < precedence_order[top_element]:
+                    # pop the top element
+                    popped_element = stack.popleft()
+                    postfix.append(popped_element)
+                    
+        # char is operand
+        else:
+            postfix.append(char)
+            i += 1
+            print(postfix)
+        
+    if len(stack) > 0:
+        for i in range(len(stack)):
+            postfix.append(stack.popleft())
+
+    return postfix
+    
+
+
 
 if __name__ == "__main__":
 
     # user_input = "ab*c/ef/g*+k+xy*-"
-    user_input = "52/3+79+-"
-    expr = "24^"
-    tree_obj = BinaryExpressionTree(user_input)
 
-    print(tree_obj)
-    print(tree_obj.items_in_order())
-    print(tree_obj.calculate())
-    
+    # user_input = "52/3+79+-"
+    # expr = "27*3-"
+    # tree_obj = BinaryExpressionTree(user_input)
+
+    # print(tree_obj)
+    # print(tree_obj.items_in_order())
+    # print(tree_obj.calculate())
+    # for i in range(tree_obj.size):
+    #===============Test postfix conversion====================#
+    infix = "a*b/c+e/f*g+k-x*y"
+    postfix = infix_to_postfix(infix)
+    print(f"postfix: {postfix}")
