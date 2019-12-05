@@ -54,7 +54,7 @@ class BinaryExpressionTree(object):
         """
         Insert the postfix expression into the tree using stack
         """
-
+        print(f"inserting expression: {expression}")
         # if max size is 0, then it is infinite
         stack = queue.LifoQueue(maxsize=0)
         char = expression[0]
@@ -68,7 +68,7 @@ class BinaryExpressionTree(object):
         while not stack.empty():
             char = expression[i]
             # if char is operand
-            if char in lower_string or char in "0123456789":
+            if char in lower_string or char.isdigit():
                 # create a node and push the node into the stack
                 node = BinaryTreeNode(char)
                 stack.put(node)
@@ -128,9 +128,12 @@ class BinaryExpressionTree(object):
             # Traverse right subtree, if it exists
             self._traverse_in_order_recursive(node.right, visit)
 
-    def calculate(self, node=None):
+    def _calculate(self, node=None) -> float:
         """
-        Calculate the expression in the tree
+        Calculate this tree expression recursively
+
+        Args:
+            node(BinaryTreeNode):  
         """
         # initialize
         
@@ -146,11 +149,12 @@ class BinaryExpressionTree(object):
             node.value = int(node.data)
             return int(node.data)
         
-        left_sum = self.calculate(node.left)
-        right_sum = self.calculate(node.right)
+        left_sum = self._calculate(node.left)
+        right_sum = self._calculate(node.right)
 
         # addition
         if node.data == "+":
+            # TODO: ask Alan if is there any meaning to have .value attribute
             node.value = left_sum + right_sum
             return left_sum + right_sum
         # subtraction
@@ -165,10 +169,18 @@ class BinaryExpressionTree(object):
         # power
         else:
             return left_sum ** right_sum
-        
 
-def infix_to_postfix(infix_input):
-    precedence_order = {'+': 0, '-': 0, '*': 1, '/': 1, '^': 2, '(': 3, ')': 3}
+    def calculate(self):
+        return self._calculate(node=None)
+
+def infix_to_postfix(infix_input: list) -> list:
+    """
+    Converts infix expression to postfix.
+
+    Args:
+        infix_input(list): infix expression user entered
+    """
+    precedence_order = {'+': 0, '-': 0, '*': 1, '/': 1, '^': 2}
     associativity = {'+': "LR", '-': "LR", '*': "LR", '/': "LR", '^': "RL"}
     
     i = 0
@@ -222,7 +234,7 @@ def infix_to_postfix(infix_input):
                 postfix.append(popped_element)
                 # update the top element
                 top_element = stack[0]
-            # now we pop opening parenthases but we dont add it to postfix expression
+            # now we pop opening parenthases and discard it
             stack.popleft()
             i += 1
         # char is operand
@@ -237,23 +249,60 @@ def infix_to_postfix(infix_input):
 
     return postfix
     
+def _clean_input(infix_exp: str) -> list:
+    """
+    Clean and determine if the input expression user provided can be
+    calculated.
 
+    Args:
+        infix_exp(str): raw infix expression from user
+    
+    Return:
+        clean_exp(list): cleaned expression in a list form. Using list
+        helps to support more than 1 digit numbers in the tree.
+    """
+    operators = "+-*/^()"
+    # remove all whitespaces
+    clean_exp = "".join(infix_exp.split())
+    clean = []
+    i = 0
 
+    while i < len(clean_exp):
+        char = clean_exp[i]
+        if char in operators:
+            clean.append(char)
+            i += 1
+            # i += 1
+        else:
+            num = ""
+            while char not in operators:
+                char = clean_exp[i]
+                num += char
+                i += 1
+            # just the number part
+            clean.append(num[:-1])
+            # operator
+            clean.append(num[-1])
+    return clean
 
 if __name__ == "__main__":
 
-    # user_input = "ab*c/ef/g*+k+xy*-"
+    user_input = "ab*c/ef/g*+k+xy*-"
 
-    # user_input = "52/3+79+-"
-    # expr = "27*3-"
-    # tree_obj = BinaryExpressionTree(user_input)
-
-    # print(tree_obj)
-    # print(tree_obj.items_in_order())
-    # print(tree_obj.calculate())
+    user_input = "52/3+79+-"
+    expr = ['10', '2', '^', '300', '20', '/', '+']
+    tree_obj = BinaryExpressionTree(expr)
+    # tree_obj.infix_to_postfix(expr)
+    print(tree_obj)
+    print(tree_obj.items_in_order())
+    print(tree_obj.calculate())
     # for i in range(tree_obj.size):
     #===============Test postfix conversion====================#
-    infix = "A*(B+C)/D"
-    # expected = "kl+mn*-op^w*u/v/t*+q+"
-    postfix = infix_to_postfix(infix)
-    print(f"postfix: {postfix}")
+    # infix = "((2+5)+(7-3))*((9-1)/(4-2))"
+    # # expected = "kl+mn*-op^w*u/v/t*+q+"
+    # postfix = infix_to_postfix(expr)
+    # print(f"postfix: {postfix}")
+
+    # dirty = "((10^2) + (300/25))   "
+    # clean = _clean_input(dirty)
+    # print(f"dirty: {dirty}, clean: {clean}")
