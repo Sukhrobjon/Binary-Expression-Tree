@@ -8,24 +8,24 @@ lower_string = "abcdefghijklmnopqrstuvwxyz"
 class BinaryTreeNode(object):
     def __init__(self, data):
         """
-        Initialize the tree with user expression(math expression)
-        
+        Initialize the tree with user expression(algebraic expression)
+    
         Args:
-            expression(str): string representation of math expression
+            data(str): string representation of math expression
         """
         self.data = data
         self.right = None
         self.left = None
         # flag for operators to distinguish from operands
         self.operator = False
-        self.value = None
+    
 
     def __repr__(self) -> str:
         """Return a string representation of this parse tree node."""
         return 'ParseTreeNode({!r})'.format(self.data)
 
     def is_leaf(self) -> bool:
-        """Return True if this node is a leaf (that is operands)."""
+        """Return True if this node is a leaf(that is operand)."""
         return self.left is None and self.right is None
 
 
@@ -82,12 +82,11 @@ class BinaryExpressionTree(object):
                 right_child = stack.popleft()
                 # pop item one before the last item and create left_child
                 left_child = stack.popleft()
-                # assign those as a child of the operand
+                # assign those as a child of the (parent)operator
                 operator_node.right = right_child
                 operator_node.left = left_child
-                # push back the operand node to the stack
+                # push back the operator node(subtree) to the stack
                 stack.appendleft(operator_node)
-                
 
                 # check if we reach last element in the expression
                 # so we can define the root of the tree
@@ -130,7 +129,7 @@ class BinaryExpressionTree(object):
             # Traverse right subtree, if it exists
             self._traverse_in_order_recursive(node.right, visit)
 
-    def _calculate(self, node=None) -> float:
+    def evaluate(self, node=None) -> float:
         """
         Calculate this tree expression recursively
 
@@ -153,32 +152,27 @@ class BinaryExpressionTree(object):
             
             return val
         
-        left_sum = self._calculate(node.left)
-        right_sum = self._calculate(node.right)
+        left_value = self.evaluate(node.left)
+        right_value = self.evaluate(node.right)
 
         # addition
         if node.data == "+":
-            # TODO: ask Alan if is there any meaning to have .value attribute
-            node.value = left_sum + right_sum
-            print(f"node value: {node.value}")
-            return left_sum + right_sum
+            
+            return left_value + right_value
         # subtraction
         elif node.data == "-":
         
             print(f"node value: {node.value}")
-            return left_sum - right_sum
+            return left_value - right_value
         # division
         elif node.data == "/":
-            return left_sum / right_sum
+            return left_value / right_value
         # multiplication
         elif node.data == "*":
-            return left_sum * right_sum
+            return left_value * right_value
         # power
         else:
-            return left_sum ** right_sum
-
-    def calculate(self):
-        return self._calculate()
+            return left_value ** right_value
 
     def infix_to_postfix(self, infix_input: list) -> list:
         """
@@ -255,9 +249,13 @@ class BinaryExpressionTree(object):
                 i += 1
             #     print(postfix)
             # print(f"stack: {stack}")
+        
+        # empty the stack
         if len(stack) > 0:
             for i in range(len(stack)):
                 postfix.append(stack.popleft())
+        # while len(stack) > 0:
+        #     postfix.append(stack.popleft())
 
         return postfix
         
@@ -276,11 +274,13 @@ class BinaryExpressionTree(object):
         operators = "+-*/^()"
         # remove all whitespaces
         clean_exp = "".join(infix_exp.split())
+        print(f"clean_exp: {clean_exp}")
         clean_format = []
         i = 0
 
         while i < len(clean_exp):
             char = clean_exp[i]
+            print(f"char: {char}")
             if char in operators:
                 clean_format.append(char)
                 i += 1
@@ -299,16 +299,17 @@ class BinaryExpressionTree(object):
 
 
 if __name__ == "__main__":
-    user_input = "52/3+79+-"
-    expr = "(((10+2.2) + (5.4))^1)   "
+    # user_input = "((2+5)+(7-3))*((9-1)/(4-2))"
+    # expr = "(((10+2.2) + (5.4))^2)   "
+    # user_input = "8-2*3"
     
     # ignore the script and grab the user expression
-    user_input = sys.argv[1:]
-    tree_obj = BinaryExpressionTree(expr)
+    # user_input = sys.argv[1:]
+    tree_obj = BinaryExpressionTree(user_input)
     
-    print(tree_obj)
+    print(f"Tree: {tree_obj}")
     print(tree_obj.items_in_order())
-    print(tree_obj.calculate())
+    print(tree_obj.evaluate())
     
     
     #===============Test postfix conversion====================#
