@@ -56,7 +56,6 @@ class BinaryExpressionTree(object):
         Insert the postfix expression into the tree using stack
         """
         postfix_exp = self.infix_to_postfix(expression)
-        print(f"postfix: {postfix_exp}")
         # if max size is 0, then it is infinite
         stack = deque()
         char = postfix_exp[0]
@@ -87,15 +86,10 @@ class BinaryExpressionTree(object):
                 operator_node.left = left_child
                 # push back the operator node(subtree) to the stack
                 stack.appendleft(operator_node)
-
                 # check if we reach last element in the expression
                 # so we can define the root of the tree
                 if len(stack) == 1 and i == len(postfix_exp) - 1:
                     self.root = stack.popleft()
-                    print(f"root: {self.root}")
-                    print(f"right: {self.root.right}, left: {self.root.left}")
-                    
-
             # increment i
             i += 1
             self.size += 1
@@ -147,7 +141,6 @@ class BinaryExpressionTree(object):
 
         # check if we are at the leaf, it means it is a operand
         if node.is_leaf():
-            node.value = float(node.data)
             val = float(node.data)
             
             return val
@@ -161,8 +154,6 @@ class BinaryExpressionTree(object):
             return left_value + right_value
         # subtraction
         elif node.data == "-":
-        
-            print(f"node value: {node.value}")
             return left_value - right_value
         # division
         elif node.data == "/":
@@ -301,7 +292,7 @@ class BinaryExpressionTree(object):
 if __name__ == "__main__":
     # user_input = "((2+5)+(7-3))*((9-1)/(4-2))"
     # expr = "(((10+2.2) + (5.4))^2)   "
-    # user_input = "8-2*3"
+    user_input = "((2+5)/3)-(3+8)"
     
     # ignore the script and grab the user expression
     # user_input = sys.argv[1:]
